@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Claudia Augusta</title>
+  
+  <!-- iOS Web App settings -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Claudia Augusta">
+  
+  <!-- Dynamic Apple Touch Icon with Bike SVG -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' width='512' height='512'><rect width='512' height='512' rx='100' fill='%23059669'/><path d='M155 352a64 64 0 1 0 0-128 64 64 0 0 0 0 128zm202 0a64 64 0 1 0 0-128 64 64 0 0 0 0 128zm-202-32a32 32 0 1 1 0-64 32 32 0 0 1 0 64zm202 0a32 32 0 1 1 0-64 32 32 0 0 1 0 64zm-143-64l-40-80h-45v-24h61l29 58 56-58h63v24h-49l-45 46 29 58h-23.5z' fill='white'/></svg>">
+
+  <style>
+    :root {
+      --primary: #059669;
+      --primary-dark: #047857;
+      --bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --text: #1f2937;
+      --text-muted: #6b7280;
+      --accent: #d97706;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding-bottom: 40px;
+    }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 50px 20px 20px 20px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .header-title svg {
+      width: 32px;
+      height: 32px;
+      fill: currentColor;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 15px auto;
+      padding: 0 15px;
+    }
+
+    /* Start / Hotel Vrijdag voor vertrek */
+    .start-card {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .start-card h3 {
+      font-size: 15px;
+      color: #1e40af;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stage-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
+    }
+
+    .stage-header {
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .stage-day {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 2px;
+    }
+
+    .stage-title {
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    .stage-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .toggle-icon {
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.3s ease;
+    }
+
+    .stage-card.open .toggle-icon {
+      transform: rotate(180deg);
+    }
+
+    .stage-content {
+      display: none;
+      padding: 0 16px 16px 16px;
+      border-top: 1px solid #f3f4f6;
+    }
+
+    .stage-card.open .stage-content {
+      display: block;
+    }
+
+    /* Timeline Styles */
+    .timeline {
+      position: relative;
+      margin: 15px 0 20px 10px;
+      padding-left: 20px;
+      border-left: 2px solid #e5e7eb;
+    }
+
+    .tl-item {
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    .tl-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .tl-node {
+      position: absolute;
+      left: -26px;
+      top: 3px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: 2px solid white;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+
+    .tl-node.stop {
+      background: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+
+    .tl-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .tl-place {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .tl-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .tl-details {
+      font-size: 13px;
+      color: #4b5563;
+      margin-top: 4px;
+      background: #f9fafb;
+      padding: 8px 10px;
+      border-radius: 6px;
+    }
+
+    .tl-details .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+
+    .badge-koffie { background: #fef3c7; color: #92400e; }
+    .badge-lunch { background: #d1fae5; color: #065f46; }
+
+    /* Hotel Box */
+    .hotel-card {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 15px;
+    }
+
+    .hotel-title {
+      font-weight: 700;
+      color: var(--primary-dark);
+      font-size: 14px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hotel-info {
+      font-size: 13px;
+      color: #374151;
+      line-height: 1.4;
+    }
+
+    .hotel-info a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .btn-link {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 4px 10px;
+      background: var(--primary);
+      color: white !important;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-title">
+    <svg viewBox="0 0 512 512">
+      <path d="M155 352a64 64 0 1 0 0-128 64 64 0 0 0 0 128zm202 0a64 64 0 1 0 0-128 64 64 0 0 0 0 128zm-202-32a32 32 0 1 1 0-64 32 32 0 0 1 0 64zm202 0a32 32 0 1 1 0-64 32 32 0 0 1 0 64zm-143-64l-40-80h-45v-24h61l29 58 56-58h63v24h-49l-45 46 29 58h-23.5z"/>
+    </svg>
+    Claudia Augusta
+  </div>
+  <div class="subtitle">Roadbook Fietsreis</div>
+</header>
+
+<div class="container">
+
+  <!-- Hotel voor Vertrek -->
+  <div class="start-card">
+    <h3>🏢 Overnachting vóór vertrek (17/9)</h3>
+    <div class="hotel-info">
+      <strong>Hotel Penz West</strong> — Innsbruck<br>
+      Adres: Fürstenweg 183, 6020 Innsbruck<br>
+      Tel: +43 512 22514<br>
+      <a href="https://www.penz-west.at/en.html" target="_blank" class="btn-link">Website Openen</a>
+    </div>
+  </div>
+
+  <!-- ETAPPE 1 -->
+  <div class="stage-card">
+    <div class="stage-header" onclick="toggleStage(this)">
+      <div>
+        <div class="stage-day">Dag 1 · Vrijdag 18/9</div>
+        <div class="stage-title">Innsbruck → Prutz</div>
+        <div class="stage-meta">89 km · ~290 m stijgen</div>
+      </div>
+      <div class="toggle-icon">▼</div>
+    </div>
+    <div class="stage-content">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-node"></div>
+          <div class="tl-header"><span class="tl-place">Innsbruck</span><span class="tl-meta">km 0 · 574m</span></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node"></div>
+          <div class="tl-header"><span class="tl-place">Zirl</span><span class="tl-meta">km 10 · 622m</span></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Oberhofen / Telfs</span><span class="tl-meta">km 24-26 · 633m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-koffie">☕ Koffie Stop</span><br>
+            • <b>Café Margit</b> (Weißenbachgasse 9, Telfs)<br>
+            • <b>Café Chocolat</b> (Josef-Schöpf-Straße 10, Telfs)
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Ötztal-Bahnhof / Haiming</span><span class="tl-meta">km 42-46 · 670m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-lunch">🍝 Lunch Stop</span><br>
+            • <b>Gasthaus Rafting Alm</b> (Magerbach 2, Haiming - terras aan 't water)<br>
+            • <b>s'Platzl</b> (Bahnhofstr. 6, Ötztal-Bahnhof)
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node"></div>
+          <div class="tl-header"><span class="tl-place">Imst</span><span class="tl-meta">km 56 · 828m</span></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Zams / Landeck</span><span class="tl-meta">km 69 · 767m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-koffie">☕ Koffie Stop</span><br>
+            • <b>Café Valentino</b> (Hauptstraße 40, Zams)<br>
+            • <b>Café Perjen</b> (Landeck)
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node"></div>
+          <div class="tl-header"><span class="tl-place">Prutz</span><span class="tl-meta">km 89 · 864m</span></div>
+        </div>
+      </div>
+
+      <div class="hotel-card">
+        <div class="hotel-title">🏨 Overnachting Etappe 1</div>
+        <div class="hotel-info">
+          <strong>Hotel Post</strong><br>
+          Dorfstraße 1, 6522 Prutz, Oostenrijk<br>
+          Tel: +43 5472 6217<br>
+          <a href="https://www.postprutz.at/en" target="_blank" class="btn-link">Website Openen</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ETAPPE 2 -->
+  <div class="stage-card">
+    <div class="stage-header" onclick="toggleStage(this)">
+      <div>
+        <div class="stage-day">Dag 2 · Zaterdag 19/9</div>
+        <div class="stage-title">Prutz → Prad am Stilfserjoch</div>
+        <div class="stage-meta">78 km · ~850 m stijgen</div>
+      </div>
+      <div class="toggle-icon">▼</div>
+    </div>
+    <div class="stage-content">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-node"></div>
+          <div class="tl-header"><span class="tl-place">Prutz</span><span class="tl-meta">km 0 · 864m</span></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Pfunds</span><span class="tl-meta">km 21 · 970m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-koffie">☕ Koffie Stop</span><br>
+            • <b>Pfundser Stüberl</b> (Stuben 315)<br>
+            • <b>Berghof Thöni</b> (Tirolerwirtshaus)
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Nauders / Reschensee</span><span class="tl-meta">km 40 · 1.438m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-lunch">🍝 Lunch Stop</span><br>
+            • <b>Restaurant/Café Mein Dörfl</b> (zicht op verdronken kerktoren)<br>
+            • <b>Traube Post</b> (Graun am Reschen)
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Burgeis / Schluderns</span><span class="tl-meta">km 61 · 1.216m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-koffie">☕ Koffie Stop</span><br>
+            • <b>Café Kloster Marienberg</b> (sfeervol terras, +1.5km klim)<br>
+            • <b>Burggasthof "Zum weißen Rössl"</b> (Schluderns)
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node"></div>
+          <div class="tl-header"><span class="tl-place">Prad am Stilfserjoch</span><span class="tl-meta">km 78 · 915m</span></div>
+        </div>
+      </div>
+
+      <div class="hotel-card">
+        <div class="hotel-title">🏨 Overnachting Etappe 2</div>
+        <div class="hotel-info">
+          <strong>Hotel Zentral</strong><br>
+          Via Principale 100, 39026 Prad am Stilfserjoch, Italië<br>
+          Tel: +39 0473 616008<br>
+          <a href="https://www.zentral.it/en/" target="_blank" class="btn-link">Website Openen</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ETAPPE 3 -->
+  <div class="stage-card">
+    <div class="stage-header" onclick="toggleStage(this)">
+      <div>
+        <div class="stage-day">Dag 3 · Zondag 20/9</div>
+        <div class="stage-title">Prad → Bolzano</div>
+        <div class="stage-meta">81 km · ~Dalen tot 262m</div>
+      </div>
+      <div class="toggle-icon">▼</div>
+    </div>
+    <div class="stage-content">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-node"></div>
+          <div class="tl-header"><span class="tl-place">Prad am Stilfserjoch</span><span class="tl-meta">km 0 · 915m</span></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Tschars / Latsch</span><span class="tl-meta">km 22 · 620m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-koffie">☕ Koffie Stop</span><br>
+            • <b>radbar</b> (fietscafé bij Tschars met ligweide & hangmatten)<br>
+            • <b>Weinsalon Café Seeber</b>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Rabland / Partschins</span><span class="tl-meta">km 42 · 525m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-lunch">🍝 Lunch Stop</span><br>
+            • <b>Pizzeria Restaurant Laterne</b> (Saringstraße 33, Rabland)<br>
+            • <b>Restaurant Café Rössl</b> (Via Venosta 26)
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node"></div>
+          <div class="tl-header"><span class="tl-place">Meran</span><span class="tl-meta">km 50 · 325m</span></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Vilpian / Nals</span><span class="tl-meta">km 63 · 255m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-koffie">☕ Koffie Stop</span><br>
+            • <b>Café Vilpianerhof</b> (Nalser Straße 12)<br>
+            • <b>Restaurant Zum Hirschen</b>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node"></div>
+          <div class="tl-header"><span class="tl-place">Bolzano (Girlan)</span><span class="tl-meta">km 81 · 262m</span></div>
+        </div>
+      </div>
+
+      <div class="hotel-card">
+        <div class="hotel-title">🏨 Overnachting Etappe 3</div>
+        <div class="hotel-info">
+          <strong>Hotel Girlanerhof</strong><br>
+          Marklhofweg 7, 39057 Girlan / Bolzano, Italië<br>
+          Tel: +39 0471 662442<br>
+          <a href="https://www.girlanerhof.it/" target="_blank" class="btn-link">Website Openen</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ETAPPE 4 -->
+  <div class="stage-card">
+    <div class="stage-header" onclick="toggleStage(this)">
+      <div>
+        <div class="stage-day">Dag 4 · Maandag 21/9</div>
+        <div class="stage-title">Bolzano → Riva del Garda</div>
+        <div class="stage-meta">121 km · Koninginnenrit</div>
+      </div>
+      <div class="toggle-icon">▼</div>
+    </div>
+    <div class="stage-content">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-node"></div>
+          <div class="tl-header"><span class="tl-place">Bolzano</span><span class="tl-meta">km 0 · 262m</span></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Neumarkt / Egna</span><span class="tl-meta">km 33 · 214m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-koffie">☕ Koffie Stop</span><br>
+            • <b>Café Central</b> (Piazza Principale 1 - onder de arcaden)
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Lavis / Trento</span><span class="tl-meta">km 63 · 190m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-lunch">🍝 Lunch Stop</span><br>
+            • <b>Bici Grill Trento</b> (Via Lidorno 2 - fietscafé aan de Adige)
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Nomi / Rovereto</span><span class="tl-meta">km 94 · 180m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-koffie">☕ Koffie Stop</span><br>
+            • <b>Bici Grill Asgard</b> (Nomi - direct aan fietspad)<br>
+            • <b>Caffetteria Bontadi</b> (Rovereto oud centrum)
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node"></div>
+          <div class="tl-header"><span class="tl-place">Riva del Garda</span><span class="tl-meta">km 121 · 70m</span></div>
+        </div>
+      </div>
+
+      <div class="hotel-card">
+        <div class="hotel-title">🏨 Overnachting Etappe 4</div>
+        <div class="hotel-info">
+          <strong>Hotel Restel de Fer</strong><br>
+          Via Restel de Fer 10, 38066 Riva del Garda, Italië<br>
+          Tel: +39 0464 553481<br>
+          <a href="https://www.resteldefer.com/en/" target="_blank" class="btn-link">Website Openen</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ETAPPE 5 -->
+  <div class="stage-card">
+    <div class="stage-header" onclick="toggleStage(this)">
+      <div>
+        <div class="stage-day">Dag 5 · Dinsdag 22/9</div>
+        <div class="stage-title">Riva del Garda → Verona</div>
+        <div class="stage-meta">84 km · Slotrit</div>
+      </div>
+      <div class="toggle-icon">▼</div>
+    </div>
+    <div class="stage-content">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-node"></div>
+          <div class="tl-header"><span class="tl-place">Riva del Garda</span><span class="tl-meta">km 0 · 70m</span></div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Ala</span><span class="tl-meta">km 23 · 180m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-koffie">☕ Koffie Stop</span><br>
+            • <b>Caffè Commercio</b> (Largo Vicentini 42 - barok centrum)
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Rivalta (Brentino)</span><span class="tl-meta">km 44 · 135m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-lunch">🍝 Lunch Stop</span><br>
+            • <b>Hotel Belvedere</b> (Rivalta di Brentino Belluno)<br>
+            • <b>Ristorante Al Palazzo</b>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node stop"></div>
+          <div class="tl-header"><span class="tl-place">Cavaion Veronese</span><span class="tl-meta">km 65 · 190m</span></div>
+          <div class="tl-details">
+            <span class="badge badge-koffie">☕ Koffie Stop</span><br>
+            • <b>Locanda Centrale</b> (Piazza della Chiesa 4)<br>
+            • <b>Mariposa Café</b>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-node"></div>
+          <div class="tl-header"><span class="tl-place">Verona</span><span class="tl-meta">km 84 · 59m</span></div>
+        </div>
+      </div>
+
+      <div class="hotel-card">
+        <div class="hotel-title">🏨 Overnachting Etappe 5</div>
+        <div class="hotel-info">
+          <strong>Hotel Delser Manor</strong><br>
+          Strada Dei Monti 14/B, 37124 Verona, Italië<br>
+          Tel: +39 045 8011098<br>
+          <a href="https://www.delserverona.com/" target="_blank" class="btn-link">Website Openen</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggleStage(header) {
+    const card = header.parentElement;
+    card.classList.toggle('open');
+  }
+</script>
+
+</body>
+</html>
